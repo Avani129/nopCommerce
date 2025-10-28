@@ -45,7 +45,7 @@ public class LocalizationMigration : MigrationBase
         {
             //#7898
             ["Admin.Configuration.Settings.Catalog.ArtificialIntelligence.LogRequests"] = "Log AI requests",
-            ["Admin.Configuration.Settings.Catalog.ArtificialIntelligence.LogRequests.Hint"] = "Determine whether to enable logging of all requests to AI services.",
+            ["Admin.Configuration.Settings.Catalog.ArtificialIntelligence.LogRequests.Hint"] = "Check to enable logging of all requests to AI services.",
         }, languageId);
 
         #endregion
