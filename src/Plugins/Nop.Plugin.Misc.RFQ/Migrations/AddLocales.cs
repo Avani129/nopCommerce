@@ -7,7 +7,7 @@ using Nop.Services.Localization;
 
 namespace Nop.Plugin.Misc.RFQ.Migrations;
 
-[NopMigration("2025/10/30 10:41:53:1677556", "Misc.RFQ add the locale")]
+[NopMigration("2025/10/30 20:17:53:1677556", "Misc.RFQ add the locale")]
 public class AddLocales : ForwardOnlyMigration
 {
     private readonly ILanguageService _languageService;
@@ -33,7 +33,8 @@ public class AddLocales : ForwardOnlyMigration
 
         _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
         {
-            ["Plugins.Misc.RFQ.CustomerRequest.RequestedQty.MustGreaterThanZero"] = "Requested qty of \"{0}\" product must be greater than zero."
+            ["Plugins.Misc.RFQ.CustomerRequest.RequestedQty.MustGreaterThanZero"] = "Requested qty of \"{0}\" product must be greater than zero.",
+            ["Plugins.Misc.RFQ.CustomerRequest.RequestedUnitPrice.MustBeEqualOrGreaterThanZero"] = "Requested unit price of \"{0}\" product be equal or greater than zero."
         }, languageId).Wait();
     }
 }

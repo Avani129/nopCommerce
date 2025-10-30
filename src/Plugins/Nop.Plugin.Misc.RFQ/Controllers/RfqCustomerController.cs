@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Http;
@@ -107,33 +106,52 @@ public class RfqCustomerController : BasePublicController
 
         foreach (var requestQuoteItem in items)
         {
+            await validateUnitPrice(requestQuoteItem);
+            await validateQuantity(requestQuoteItem);
+        }
+
+        return errors;
+
+        async Task validateUnitPrice(RequestQuoteItem requestQuoteItem)
+        {
             var key = $"{RfqDefaults.UNIT_PRICE_FORM_KEY}{requestQuoteItem.Id}";
-            StringValues formValue;
 
-            if (form.ContainsKey(key))
-            {
-                formValue = form[key];
+            if (!form.ContainsKey(key)) 
+                return;
 
-                if (!decimal.TryParse(formValue, out var unitPrice))
-                    continue;
+            var formValue = form[key];
 
-                requestQuoteItem.RequestedUnitPrice = unitPrice;
-            }
+            if (!decimal.TryParse(formValue, out var unitPrice))
+                return;
 
-            key = $"{RfqDefaults.QUANTITY_FORM_KEY}{requestQuoteItem.Id}";
+            requestQuoteItem.RequestedUnitPrice = unitPrice;
+
+            if (unitPrice >= 0)
+                return;
+
+            var currentCurrency = await _workContext.GetWorkingCurrencyAsync();
+            var model = await _modelFactory.PrepareRequestQuoteItemModelAsync(new RequestQuote(),
+                requestQuoteItem, currentCurrency);
+
+            errors.Add(string.Format(await _localizationService.GetResourceAsync("Plugins.Misc.RFQ.CustomerRequest.RequestedUnitPrice.MustBeEqualOrGreaterThanZero"), model.ProductName));
+        }
+
+        async Task validateQuantity(RequestQuoteItem requestQuoteItem)
+        {
+            var key = $"{RfqDefaults.QUANTITY_FORM_KEY}{requestQuoteItem.Id}";
 
             if (!form.ContainsKey(key))
-                continue;
+                return;
 
-            formValue = form[key];
-            
-            if (!int.TryParse(formValue, out var quantity)) 
-                continue;
+            var formValue = form[key];
+
+            if (!int.TryParse(formValue, out var quantity))
+                return;
 
             requestQuoteItem.RequestedQty = quantity;
 
             if (quantity > 0)
-                continue;
+                return;
 
             var currentCurrency = await _workContext.GetWorkingCurrencyAsync();
             var model = await _modelFactory.PrepareRequestQuoteItemModelAsync(new RequestQuote(),
@@ -141,8 +159,6 @@ public class RfqCustomerController : BasePublicController
 
             errors.Add(string.Format(await _localizationService.GetResourceAsync("Plugins.Misc.RFQ.CustomerRequest.RequestedQty.MustGreaterThanZero"), model.ProductName));
         }
-
-        return errors;
     }
 
     #endregion
