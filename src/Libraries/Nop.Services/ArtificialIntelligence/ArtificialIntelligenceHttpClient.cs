@@ -70,13 +70,7 @@ public partial class ArtificialIntelligenceHttpClient
         {
             if (_artificialIntelligenceSettings.LogRequests)
             {
-                if (request.Content != null)
-                {
-                    log.AppendLine("Request content:");
-                    log.AppendLine(await request.Content.ReadAsStringAsync());
-                }
-
-                log.AppendLine($"Response: {httpResponse}");
+                await appendBaseInfo();
 
                 await _logger.InsertLogAsync(LogLevel.Information, $"AI {_artificialIntelligenceSettings.ProviderType.ToString()} request", log.ToString());
             }
@@ -91,27 +85,30 @@ public partial class ArtificialIntelligenceHttpClient
 
         var tokensInfo = _artificialIntelligenceHttpClientHelper.GetTokensInfo(response);
 
-        log = new StringBuilder($"AI {_artificialIntelligenceSettings.ProviderType.ToString()} request: {request}{Environment.NewLine}");
         log.AppendLine("Tokens info:");
         log.AppendLine(tokensInfo);
-
-        if (request.Content != null)
-        {
-            log.AppendLine("Request content:");
-            log.AppendLine(await request.Content.ReadAsStringAsync());
-        }
-
-        log.AppendLine($"Response {httpResponse}:");
-
-        if (!string.IsNullOrEmpty(response))
-        {
-            log.AppendLine("Response content:");
-            log.AppendLine(response);
-        }
+        await appendBaseInfo();
 
         await _logger.InsertLogAsync(LogLevel.Information, $"AI {_artificialIntelligenceSettings.ProviderType.ToString()} request ({tokensInfo.Replace(Environment.NewLine, ", ")})",  log.ToString());
 
         return result;
+
+        async Task appendBaseInfo()
+        {
+            if (request.Content != null)
+            {
+                log.AppendLine("Request content:");
+                log.AppendLine(await request.Content.ReadAsStringAsync());
+            }
+
+            log.AppendLine($"Response {httpResponse}:");
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                log.AppendLine("Response content:");
+                log.AppendLine(response);
+            }
+        }
     }
 
     #endregion
